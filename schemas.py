@@ -11,3 +11,8 @@ class UserOut(UserBase):  # This is what was missing!
 
     class Config:
         from_attributes = True  # Pydantic v2
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    role: str

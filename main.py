@@ -3,11 +3,18 @@ from sqlalchemy.orm import Session
 from database import get_db         #  your database session getter
 from schemas import UserCreate, UserOut
 import crud                         #The file you created above
-from users import router as user_router
 import models
 from database import engine
 
+from auth import router as auth_router
+from users import router as users_router
+
 app = FastAPI()
+app.include_router(auth_router)
+app.include_router(users_router)
+
+#create database tables
+models.Base.metadata.create_all(bind=engine)
 
 @app.post("/register", response_model=UserOut)
 def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -17,11 +24,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 	new_user = crud.create_user(db, user=user)
 	return new_user
 
-#create database tables
-models.Base.metadata.create_all(bind=engine)
-
-app.include_router(user_router)
-
 @app.get("/")
 def read_root():
 	return{"message": "Welcome to FastAPI"}
+
