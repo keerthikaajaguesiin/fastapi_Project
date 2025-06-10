@@ -3,9 +3,13 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
 from fastapi import Security
+from dotenv import load_dotenv
+load_dotenv()
+import os
+
 
 # JWT settings
-SECRET_KEY = "your-secret-key"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")  #token endpoint
@@ -29,12 +33,12 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenData:
 	except JWTError:
 	    raise HTTPException(status_code=401, detail="Invalid token")
 		
-def require_role(required_role: str):
-	def role_checker(current_user: TokenData = Depends(get_current_user)):
-	    if currect_user.role != required_role:
-	        raise HTTPException(
-	            status_code=403,
-                        details=f"Operation allowed only for users with role '{required_role}'"
-	        )
-	    return current_user
-	return role_checker
+def require_role(required_roles: list):
+    def role_checker(user: dict = Depends(get_current_user)):
+        if user["role"] not in required_roles:  # Corrected to 'required_roles'
+            raise HTTPException(
+                status_code=403,
+                detail=f"Access denied. Role '{user['role']}' not allowed."
+            )
+        return user
+    return role_checker

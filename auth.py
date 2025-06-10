@@ -9,6 +9,9 @@ from utils import require_role
 from utils import create_refresh_token
 from fastapi import Request
 
+from dotenv import load_dotenv
+import os
+
 router = APIRouter(
     prefix="/auth",
     tags=["auth"]
@@ -69,12 +72,11 @@ def admin_data(user: dict = Depends(require_role(["admin"]))):
 @router.post("/refresh_token")
 def refresh_token(request: Request):
     auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid Authorization header")
 
-    if not auth_header or not auth_header.startswith("Beares"):
-        raise HTTPException(status_code=401, details="Missing refresh token")
+    refresh_token = auth_header.split(" ")[1]
 
-
-    refresh_token = auth_header.split("")[1]
 
     try:
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
