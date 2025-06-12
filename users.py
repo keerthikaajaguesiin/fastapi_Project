@@ -21,7 +21,7 @@ def get_all_users(db: Session = Depends(get_db), user:dict =Depends(require_role
 
 @router.get("/{user_id}", response_model=UserOut)
 def get_user(user_id: int, db: Session = Depends(get_db), user: dict =Depends(require_role(["admin"]))):
-    db_user = db.query(models.User).filter(models.User.id == user_id).firest()
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
@@ -77,11 +77,12 @@ def delete_user(
 
 from fastapi import APIRouter, Request, Depends
 from permissions import role_required
-from dependencies import require_role
+from utils import require_role
+
 
 router = APIRouter()
 
-@router.get(":/admin/dashboard")
+@router.get("/admin/dashboard")
 def get_admin_data(request: Request, _: None = Depends(role_required(["Admin","Manager"]))):
 	return{"message": "Hello Admin or Manager!"}
 
